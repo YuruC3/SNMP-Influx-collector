@@ -1,11 +1,10 @@
 import influxdb_client, sqlalchemy, random, os
 # from sqlmodel import Field, Session, SQLModel, create_engine, select
 from sqlalchemy import create_engine, exc  # , Column, Integer, String, Numeric
-from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-
-from typing import Annotated, Final
 from classes import *
+from typing import Annotated, Final
 
 from influxdb_client import InfluxDBClient, Point, WritePrecision
 from influxdb_client.client.write_api import SYNCHRONOUS, ASYNCHRONOUS, WriteOptions
@@ -68,12 +67,12 @@ def tempsnsrIntoSQLDB(
 
         try:
 
-            data = sensorsqldata(tableInp)
+            sqlData = sensorsqldata(tableInp)
             # print("2")
 
             if inpayload:
                 # print("3")
-                session.add(data(
+                session.add(sqlData(
                     data = insertData,
                 ))
                 # print("4")
@@ -88,7 +87,7 @@ def tempsnsrIntoSQLDB(
 
 
 def tempsnsrIntoFluxQLDB(
-    inpayload: Annotated[SensorPayload, "Payload"]
+    inpayload: Annotated[snmpPyData, "Payload"]
     ) -> int:
 
     """
