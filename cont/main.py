@@ -216,6 +216,8 @@ yes = asyncio.run(idracPoolRemote_v1("192.168.20.7"))
 
 print("for loop")
 print(yes)
+
+x = idracFanStatus(6)
 # print(yes.hostname)
 # print(yes.powerDrawPSU1)
 # print(yes.powerDrawPSU2)
