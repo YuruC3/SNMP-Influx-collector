@@ -82,15 +82,34 @@ class snmpValueToHost():
 # Dataclasses--------------------------------------------
 
 @dataclass
-class snmpPyData():
+class snmpPyIDRACData():
     """Dataclass for snmp data"""
     hostname: str
     powerDrawPSU1: int
-    powerDrawPSU2: int
     voltagePSU1: int
-    voltagePSU2: int
     inletTemp: float
     exhaustTemp: float
-    uptime: int
+    cpu1Temp: float
+    uptimeH: float
 
-    
+    # optional fields
+    uptimeD: float | None = None
+    cpu2Temp: float | None = None
+    powerDrawPSU2: int | None = None
+    voltagePSU2: int | None = None
+
+
+    def __str__(self):
+        return (
+            f"{self.hostname}\n"
+            f"{self.powerDrawPSU1}\n"
+            f"{self.powerDrawPSU2}\n"
+            f"{self.voltagePSU1}\n"
+            f"{self.voltagePSU2}\n"
+            f"{self.inletTemp}\n"
+            f"{self.exhaustTemp}\n"
+            f"{self.cpu1Temp}\n"
+            f"{self.cpu2Temp}\n"
+            f"{self.uptimeH}\n"
+            f"{self.uptimeD}"
+            )
