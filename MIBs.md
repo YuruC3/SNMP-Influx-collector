@@ -45,6 +45,16 @@ Here the voltage i given without deicmal point (240000) so decimal point needs t
 
 
 
+## Fans
+
+.1.3.6.1.4.1.674.10892.5.4.700.12.1.6 (coolingDeviceReading)
+
+Get each fan one by one from .1.1 to .1.XX; Values in RPM
+
+.1.3.6.1.4.1.674.10892.5.4.700.12.1.19 (coolingDeviceFQDD)
+
+Fan names going from 1.1 to 1.XX; Named coolingDeviceFQDD.1.XX
+
 ## other
 
 .1.3.6.1.4.1.674.10892.5.4.1100.30.1.23 (processorDeviceBrandName)
