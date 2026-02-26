@@ -26,6 +26,23 @@ input voltage for PSU(s)
 
 Divide by 2 to get power usage
 
+### To get per PSU power in watts
+
+Multiply Amperage by Voltage:
+
+.1.3.6.1.4.1.674.10892.5.4.600.30.1.6 (amperageProbeReading)
+
+1.1 is PSU1 and 1.2 is PSU2
+
+Amperage is in hundreds of miliamps. So if amperageProbeReading read 2, it means that PSUx is drawing 0.2 Amps
+
+
+.1.3.6.1.4.1.674.10892.5.4.600.20.1.6 (voltageProbeReading)
+
+1.31 is PSU1 and 1.32 is PSU2
+
+Here the voltage i given without deicmal point (240000) so decimal point needs to be moved (240.000) or just convert to int (240)
+
 
 
 ## other
@@ -34,3 +51,6 @@ Divide by 2 to get power usage
 
 Get the CPU name(s)
 
+.1.3.6.1.4.1.674.10892.5.2.5.0 (systemPowerUpTime)
+
+Uptime in seconds
