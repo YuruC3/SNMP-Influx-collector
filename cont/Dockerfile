@@ -3,19 +3,27 @@ FROM alpine:latest
 # https://docs.docker.com/reference/dockerfile/#environment-replacement
 # ENV PUID=1600
 # ENV USER=itsme
-
 # VOLUME [""]
 
 RUN apk update && \
-    apk add python3 py3-pip su-exec curl && \
-    mkdir -p /app/snmpython/ && \
-    mkdir -p /app/snmpython/MIBs
+    apk add python3 py3-pip su-exec curl 
+
+RUN adduser -D -s /bin/sh -u 1600 pyusr
+RUN mkdir -p /app/snmpython/ && \
+    chown -R 1600:1600 /app/snmpython/ 
+USER pyusr    
 
 WORKDIR /app/snmpython/
 
-COPY ../code/main.py /app/snmpython/
-COPY ../code/funct.py /app/snmpython/
-COPY ../code/classes.py /app/snmpython/
+
+COPY ./requirements.txt /app/snmpython/
+RUN python3 -m venv pyvenv && \
+    pyvenv/bin/python3 -m pip install --upgrade pip && \
+    pyvenv/bin/pip3 install -r requirements.txt
+
+COPY ./main.py /app/snmpython/
+COPY ./funct.py /app/snmpython/
+COPY ./classes.py /app/snmpython/
 # COPY ../code/MIBs/ /app/snmpython/MIBs
 
 # COPY ./entrypoint.sh /entrypoint.sh
@@ -26,11 +34,6 @@ COPY ../code/classes.py /app/snmpython/
 # RUN chown -R "${USER}" /app/snmpython
 
 
-COPY ./requirements.txt /app/snmpython/
-
-RUN python3 -m venv venv && \
-    venv/bin/python3 -m pip install --upgrade pip && \
-    venv/bin/pip3 install -r requirements.txt
     # venv/bin/pip3 install -r requirements.txt 
 
 # Set user. No need for root past this point
@@ -41,4 +44,4 @@ RUN python3 -m venv venv && \
 # HEALTHCHECK --interval=3s --timeout=3s --retries=3 \
 #   CMD curl --fail http://127.0.0.1:8181/health || exit 1
 
-CMD ["/app/snmpython/main.py"]
+CMD ["/app/snmpython/pyvenv/bin/python3", "/app/snmpython/main.py"]

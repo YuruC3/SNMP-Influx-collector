@@ -2,8 +2,8 @@
 set -e
 
 # Default to 1600 if not provided
-PUID="${PUID:-1000}"
-PGID="${PGID:-1000}"
+PUID="${PUID:-1600}"
+PGID="${PGID:-1600}"
 USER="${USER:-pythusr}"
 GROUP="${USER:-pythusr}"
 CHOWNPATH="/app/snmpython"

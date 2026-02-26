@@ -29,6 +29,13 @@ if USESQL:
     DBNAME: Final[str] = os.getenv("DBNAME", "TEMP_SENSR")
 
 
+
+# Flightchecks-------------------------------------------    
+# Check if some neccesary ENVs are passed
+if not USEINFLUX and not USESQL:
+    raise Exception("No database selected to store the data")
+
+
 # DBprepare-------------------------------------------
 # INFLUX
 if USEINFLUX:
@@ -43,7 +50,6 @@ if USESQL:
         pool_recycle=3600           # recycle connections older than N (3600 in this case) seconds
     )
     Session = sessionmaker(bind=engine)
-
 
 
 def tempsnsrIntoSQLDB(
@@ -87,7 +93,8 @@ def tempsnsrIntoSQLDB(
 
 
 def tempsnsrIntoFluxQLDB(
-    inpayload: Annotated[snmpPyData, "Payload"]
+    inIdracPayload: Annotated[snmpPyIDRACData, "Payload"] | None = None,
+    inCiscoPayload: Annotated[int, "yes"] | None = None
     ) -> int:
 
     """
