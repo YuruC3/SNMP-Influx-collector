@@ -8,11 +8,15 @@ FROM alpine:latest
 
 RUN apk update && \
     apk add python3 py3-pip su-exec curl && \
-    mkdir -p /app/snmpython/
+    mkdir -p /app/snmpython/ && \
+    mkdir -p /app/snmpython/MIBs
 
 WORKDIR /app/snmpython/
 
-COPY ../code/someMain.py /app/snmpython/
+COPY ../code/main.py /app/snmpython/
+COPY ../code/funct.py /app/snmpython/
+COPY ../code/classes.py /app/snmpython/
+# COPY ../code/MIBs/ /app/snmpython/MIBs
 
 # COPY ./entrypoint.sh /entrypoint.sh
 # RUN chmod +x /entrypoint.sh
@@ -37,4 +41,4 @@ RUN python3 -m venv venv && \
 # HEALTHCHECK --interval=3s --timeout=3s --retries=3 \
 #   CMD curl --fail http://127.0.0.1:8181/health || exit 1
 
-CMD ["/app/snmpython/someMain.py"]
+CMD ["/app/snmpython/main.py"]

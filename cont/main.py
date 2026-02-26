@@ -12,51 +12,16 @@ SNMPUSER: Final[str] = os.getenv("SNMPUSER", None)
 SNMPPRIVKEY: Final[str] = os.getenv("SNMPPRIVKEY", None)
 SNMPAUTHKEY: Final[str] = os.getenv("SNMPAUTHKEY", None)
 
-SNMPAUTHPROTO: Final[str] = os.getenv("SNMPAUTHPROTO", "SHA")
-SNMPPRIVPROTO: Final[str] = os.getenv("SNMPPRIVPROTO", "SHA")
+# Right now I'll only use SHA
+# SNMPAUTHPROTO: Final[str] = os.getenv("SNMPAUTHPROTO", "SHA")
+# SNMPPRIVPROTO: Final[str] = os.getenv("SNMPPRIVPROTO", "SHA")
 SNMPORT: Final[int] = os.getenv("SNMPORT", 161)
 
 # Flightchecks-------------------------------------------
-
-if SNMPAUTHPROTO and SNMPPRIVPROTO == "SHA":
-    USMDATA = UsmUserData(
-        userName=SNMPUSER,
-        authKey=SNMPPRIVKEY,
-        privKey=SNMPAUTHKEY,
-        authProtocol=usmHMACSHAAuthProtocol,
-        privProtocol=usmHMACSHAAuthProtocol,
-    )
-elif SNMPAUTHPROTO and SNMPPRIVPROTO == "AES128":
-    USMDATA = UsmUserData(
-        userName=SNMPUSER,
-        authKey=SNMPPRIVKEY,
-        privKey=SNMPAUTHKEY,
-        authProtocol=usmAesCfb128Protocol,
-        privProtocol=usmAesCfb128Protocol,
-    )
-elif SNMPAUTHPROTO == "SHA" and SNMPPRIVPROTO == "AES128":
-    USMDATA = UsmUserData(
-        userName=SNMPUSER,
-        authKey=SNMPPRIVKEY,
-        privKey=SNMPAUTHKEY,
-        authProtocol=usmHMACSHAAuthProtocol,
-        privProtocol=usmAesCfb128Protocol,
-    )
-elif SNMPAUTHPROTO == "AES128" and SNMPPRIVPROTO == "SHA":
-    USMDATA = UsmUserData(
-        userName=SNMPUSER,
-        authKey=SNMPPRIVKEY,
-        privKey=SNMPAUTHKEY,
-        authProtocol=usmAesCfb128Protocol,
-        privProtocol=usmHMACSHAAuthProtocol,
-    )
-else:        
-    raise Exception(f"No PrivAuth option like {SNMPPRIVPROTO}")
-
-# Helper functions
-def wattageCalc(amperageInp: float, voltageInp: float) -> float:
-    return amperageInp * voltageInp
-
+# Check if SNMP ENV are empty
+if not SNMPUSER or not SNMPPRIVKEY or not SNMPAUTHKEY:
+    raise Exception("No SNMP user or/and PrivAuth passed")
+    
 # Check if some neccesary ENVs are passed
 if not USEINFLUX and not USESQL:
     raise Exception("No database selected to store the data")
@@ -80,6 +45,9 @@ for host in HOST_LIST:
 import asyncio
 from pysnmp.hlapi.v3arch.asyncio import *
 
+# Helper functions
+def wattageCalc(amperageInp: float, voltageInp: float) -> float:
+    return amperageInp * voltageInp
 
 async def poolRemote(remoteIP: str):
     snmpEngine = SnmpEngine()
