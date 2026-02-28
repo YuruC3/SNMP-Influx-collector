@@ -64,3 +64,31 @@ Get the CPU name(s)
 .1.3.6.1.4.1.674.10892.5.2.5.0 (systemPowerUpTime)
 
 Uptime in seconds
+
+
+
+
+# NXOS 9.3
+
+
+## Temperature 
+
+1.3.6.1.4.1.9.9.91.1.1.1.1.4.XXXX (entSensorStatus)
+
+This OID has temperatures 
+
+```
+iso.3.6.1.4.1.9.9.91.1.1.1.1.4.38486 = INTEGER: 30
+iso.3.6.1.4.1.9.9.91.1.1.1.1.4.38487 = INTEGER: 43
+iso.3.6.1.4.1.9.9.91.1.1.1.1.4.38488 = INTEGER: 51
+iso.3.6.1.4.1.9.9.91.1.1.1.1.4.38489 = INTEGER: 61
+```
+
+### Sensor names
+
+```
+iso.3.6.1.2.1.47.1.1.1.1.7.38486 = STRING: "module-1 FRONT"
+iso.3.6.1.2.1.47.1.1.1.1.7.38487 = STRING: "module-1 BACK"
+iso.3.6.1.2.1.47.1.1.1.1.7.38488 = STRING: "module-1 CPU"
+iso.3.6.1.2.1.47.1.1.1.1.7.38489 = STRING: "module-1 Sugarbowl"
+```
