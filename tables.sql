@@ -25,21 +25,24 @@ SET NAMES utf8mb4;
 
 
 -- New universal table type
-CREATE TABLE idracHOSTNAMECHANGEME (
+CREATE TABLE IDRACmeasurement (
     id MEDIUMINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    time_stamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    hostname TEXT(30),
-    powerDrawPSU1 FLOAT,
-    powerDrawPSU2 FLOAT NULL,
-    voltagePSU1 TINYINT(100),
-    voltagePSU2 TINYINT(100) NULL,
-    inletTemp FLOAT,
-    exhaustTemp FLOAT,
-    cpu1Temp FLOAT,
-    cpu2Temp FLOAT NULL,
-    uptimeH INT ,
-    uptimeD FLOAT NULL
+    time_stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    hostname VARCHAR(64) NOT NULL,
+    powerDrawPSU1 DECIMAL(7,2),
+    powerDrawPSU2 DECIMAL(7,2) NULL,
+    voltagePSU1 DECIMAL(7,2),
+    voltagePSU2 DECIMAL(7,2) NULL,
+    inletTemp DECIMAL(5,2),
+    exhaustTemp DECIMAL(5,2),
+    cpu1Temp DECIMAL(5,2),
+    cpu2Temp DECIMAL(5,2) NULL,
+    uptimeS BIGINT,
+    uptimeH DECIMAL(8,3),
+    uptimeD DECIMAL(8,3) NULL,
 
+    INDEX idx_time (time_stamp),
+    INDEX idx_host_time (hostname, time_stamp)
 );
 
 CREATE TABLE fansHOSTNAMEHERE (
