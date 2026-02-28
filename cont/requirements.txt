@@ -1,13 +1,14 @@
 # mysql-connector-python==9.2.0
-PyMySQL==1.1.1
-sqlmodel==0.0.24
-sqlalchemy[asyncio]
-pydantic==2.10.6
-pydantic_core==2.27.2
+PyMySQL==1.1.2
+sqlmodel==0.0.37
+sqlalchemy[asyncio]==2.0.47
+asyncmy==0.2.11
+pydantic==2.12.5
+pydantic_core==2.41.5
 annotated-types==0.7.0
 typing==3.7.4.3
 pysnmp==7.1.22
 cryptography==46.0.5
-# requests==2.32.3
-influxdb-client==1.49.0
+# requests==2.32.5
+influxdb-client==1.50.0
 # influxdb3-python==0.18.0
