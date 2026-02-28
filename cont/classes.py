@@ -11,29 +11,31 @@ from dataclasses import dataclass
 AlchemyBase = declarative_base()
 
 # DATABASE "CLASSESS"--------------------------------------------
-def sensorsqldata(table_name: Annotated[str, "Name of the table"]):
+# class idracSQLTable(AlchemyBase):
+#     def __init__(self, inputData: snmpPyIDRACData):
+#         __table_args__ = {'extend_existing': True}
 
-    class SensorSQLDataClass(AlchemyBase):
-        __table_args__ = {'extend_existing': True}
+#         __tablename__ = table_name
 
-        __tablename__ = table_name
-
-        id = Column(MEDIUMINT(unsigned=True), primary_key=True, autoincrement=True)
-        time_stamp = Column(
-            TIMESTAMP,
-            server_default=text("CURRENT_TIMESTAMP"),
-            server_onupdate=text("CURRENT_TIMESTAMP"),
-            nullable=False,
-        )
-        TEMP = Column(TINYINT)
-        TEMP = Column(TEXT)
-        TEMP = Column(Float)
-        TEMP = Column(Float)
-        TEMP = Column(Float, nullable=True)
-        TEMP = Column(Float, nullable=True)
-        TEMP = Column(Float, nullable=True)
-
-    return SensorSQLDataClass
+#         id = Column(MEDIUMINT(unsigned=True), primary_key=True, autoincrement=True)
+#         time_stamp = Column(
+#             TIMESTAMP,
+#             server_default=text("CURRENT_TIMESTAMP"),
+#             server_onupdate=text("CURRENT_TIMESTAMP"),
+#             nullable=False,
+#         )
+        
+#         inputData.hostname      = Column(TEXT)
+#         inputData.powerDrawPSU1 = Column(Float)
+#         inputData.powerDrawPSU2 = Column(Float, nullable=True)
+#         inputData.voltagePSU1   = Column(Float)
+#         inputData.voltagePSU2   = Column(Float, nullable=True)
+#         inputData.inletTemp     = Column(Float)
+#         inputData.exhaustTemp   = Column(Float)
+#         inputData.cpu1Temp      = Column(Float)
+#         inputData.cpu2Temp      = Column(Float, nullable=True)
+#         inputData.uptimeH       = Column(Float)
+#         inputData.uptimeD       = Column(Float, nullable=True)
 
 
 # Custom--------------------------------------------
@@ -115,5 +117,37 @@ class snmpPyIDRACData():
             )
 
 @dataclass
-class idracFanStatus:
-    fans: Dict[str, int]  # name/index -> rpm
+class snmpPyCiscoData():
+    """Dataclass for snmp data"""
+    hostname: str
+    powerDrawPSU1: int
+    voltagePSU1: int
+    inletTemp: float
+    exhaustTemp: float
+    cpu1Temp: float
+    uptimeH: float
+
+    # optional fields
+    uptimeD: float | None = None
+    cpu2Temp: float | None = None
+    powerDrawPSU2: int | None = None
+    voltagePSU2: int | None = None
+
+
+    def __str__(self):
+        return (
+            f"{self.hostname}\n"
+            f"PSU1 {self.powerDrawPSU1} Watts\n"
+            f"PSU2 {self.powerDrawPSU2} Watts\n"
+            f"PSU1 {self.voltagePSU1} Volts\n"
+            f"PSU2 {self.voltagePSU2} Volts\n"
+            f"Inlet {self.inletTemp} C\n"
+            f"Exhaust {self.exhaustTemp} C\n"
+            f"CPU1 {self.cpu1Temp} C\n"
+            f"CPU2 {self.cpu2Temp} C\n"
+            f"Uptime {self.uptimeH} Hours\n"
+            f"Uptime {self.uptimeD} Days"
+            )
+# @dataclass
+# class idracFanStatus:
+#     fans: Dict[str, int] | None = Dict[None, None] # name/index -> rpm
