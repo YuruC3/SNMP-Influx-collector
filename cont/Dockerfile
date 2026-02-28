@@ -24,6 +24,7 @@ RUN python3 -m venv pyvenv && \
 COPY ./main.py /app/snmpython/
 COPY ./funct.py /app/snmpython/
 COPY ./classes.py /app/snmpython/
+COPY ./sqlTables.py /app/snmpython/
 # COPY ../code/MIBs/ /app/snmpython/MIBs
 
 # COPY ./entrypoint.sh /entrypoint.sh
