@@ -8,21 +8,22 @@ services:
     build:
       dockerfile: ./Dockerfile
     environment:
-      - USEINFLUX=True
+      - USEINFLUX=1
       - INFLXDBTOKEN=67676767
       - INFLUXBCKT=pyusr-DEV
       - INFLUXORG=staging
       - INFLXDBURL=http://influxdb:8086
       - INFXLUXDB_MEASUEREMENT=dev-pycollector
 
+      - USESQL=1
       - DBADDR=mariadb
       - DBUSR=root
       - DBPWD=67676767
       - DBNAME=pyCollector
 
-      - SNMPUSER=SNMPUSR
-      - SNMPPRIVKEY=123 
-      - SNMPAUTHKEY=123 
+      - SNMPUSER=SNMPusrRO
+      - SNMPPRIVKEY=67676767
+      - SNMPAUTHKEY=67676767
 
       - IDRAC_HOST_LIST=192.168.0.1;192.168.0.1;192.168.0.1;192.168.0.1
       - CISCO_HOST_LIST=192.168.0.1;192.168.0.1;192.168.0.1;192.168.0.1
