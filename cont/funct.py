@@ -1,9 +1,8 @@
 import influxdb_client, sqlalchemy, random, os, asyncio
-# from sqlmodel import Field, Session, SQLModel, create_engine, select
-# from sqlalchemy import create_engine, exc  # , Column, Integer, String, Numeric
-# from sqlalchemy.ext.declarative import declarative_base
-# from sqlalchemy.orm import sessionmaker
+from dataclasses import asdict
+
 from sqlalchemy.ext.asyncio import create_async_engine
+from sqlTables import *
 
 from classes import *
 from typing import Annotated, Final
@@ -103,10 +102,14 @@ async def sqlDataWriter(
                         t1.insert(), [{"name": "some name 1"}, {"name": "some name 2"}]
                     )
                 case "IDRAC":
+                    payload = inpDict["value"]  # snmpPyIDRACData
+                    row = asdict(payload)
+
                     await eng.execute(
-                        # changeMeLater
-                        t1.insert(), [{"name": "some name 1"}, {"name": "some name 2"}]
+                        idracMeasurement.insert(),
+                        [row]
                     )
+                    return 0
                 case "FANS":
                     await eng.execute(
                         # changeMeLater
@@ -146,15 +149,21 @@ async def fluxWriter(
 
     # Prep InfluxDB data
     inflxdb_Data_To_Send = (
-    influxdb_client.Point(f"{INFXLUXDB_MEASUEREMENT}")
-    .tag("PLACE", inpayload.name)
-    .tag("TEMP", sensorIDinp)
-    .tag("TEMP", whatTheSensor)
-    .field("TEMP", inpayload.temp)
-    .field("TEMP", inpayload.humid)
-    .field("TEMP", inpayload.hicc)
-    .field("TEMP", inpayload.presss)
-    .field("TEMP", inpayload.alttd)
+    influxdb_client.Point(INFXLUXDB_MEASUEREMENT)
+    .tag("SOURCE", inpDict["source"])
+    .tag("TYPE", inpDict["type"])
+    .tag("HOSTNAME", inpDict["value"].hostname)
+    .field("PowerDrawPSU1", inpDict["value"].powerDrawPSU1)
+    .field("PowerDrawPSU2", inpDict["value"].powerDrawPSU2)
+    .field("VoltagePSU1", inpDict["value"].voltagePSU1)
+    .field("VoltagePSU2", inpDict["value"].voltagePSU2)
+    .field("InletTemperature", inpDict["value"].inletTemp)
+    .field("ExhaustTemperature", inpDict["value"].exhaustTemp)
+    .field("TemperatureCPU1", inpDict["value"].cpu1Temp)
+    .field("TemperatureCPU2", inpDict["value"].cpu2Temp)
+    .field("UptimeInSeconds", inpDict["value"].uptimeS)
+    .field("UptimeInHours", inpDict["value"].uptimeH)
+    .field("UptimeInDays", inpDict["value"].uptimeD)
     )
 
     try:
@@ -252,7 +261,7 @@ async def ciscoPoolRemote(remoteIP: str, queueToInsrt: asyncio.Queue):
         "type": "snmpPyCiscoData"
     }
     # return returnObj
-    queueToInsrt.put(returnDict)
+    await queueToInsrt.put(returnDict)
 
 # IDRAC get data for snmpPyIDRACData class
 async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
@@ -326,6 +335,8 @@ async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         cpu2Temp=int(varBinds[8][-1] / 10),
         # CPU1 and CPU2 temp
 
+        uptimeS=int(varBinds[9][-1]),
+        # seconds
         uptimeH=round(((int(varBinds[9][-1]) / 60) / 60), ROUND_PREC),
         # seconds->minutes->hours
         uptimeD=round((((int(varBinds[9][-1]) / 60) / 60) / 24), ROUND_PREC)
@@ -338,7 +349,7 @@ async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         "type": "snmpPyIDRACData"
     }
     # return returnObj
-    queueToInsrt.put(returnDict)
+    await queueToInsrt.put(returnDict)
 
 
 # IDRAC get FAN data
@@ -388,3 +399,5 @@ async def idracPoolRemoteFAN_v3(remoteIP: str, queueToInsrt: asyncio.Queue) -> d
         "value": out,
         "type": "Dict"
     }
+
+    await queueToInsrt.put(returnDict)

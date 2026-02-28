@@ -9,8 +9,11 @@ from funct import *
 from classes import *
 
 # Program ENV---------------------------------------
-IDRAC_HOST_LIST: Final[list] = os.getenv("IDRAC_HOST_LIST").split(";")
-CISCO_HOST_LIST: Final[list] = os.getenv("CISCO_HOST_LIST").split(";")
+try:
+    IDRAC_HOST_LIST: Final[list] = os.getenv("IDRAC_HOST_LIST", None).split(";")
+    CISCO_HOST_LIST: Final[list] = os.getenv("CISCO_HOST_LIST", None).split(";")
+except:
+    raise Exception("No IDRAC hosts variable")
 
 
 
@@ -41,21 +44,24 @@ async def main():
     # idracQueue  = asyncio.Queue()
     # ciscoQueue  = asyncio.Queue()
     # fanQueue    = asyncio.Queue()
-    mainQueue(maxsize=225)
+    mainQueue = asyncio.Queue(maxsize=225)
+    
+    asyncio.create_task(ALLdbWriter(mainQueue))
 
     while True:
-        tasks = []
+        
         # IDRAC part
         async with asyncio.TaskGroup() as tg:
             for IdracIP in IDRAC_HOST_LIST:
-                tasks.append(tg.create_task(idracPoolRemote_v3(IdracIP, mainQueue)))
-                # tasks.append(tg.create_task(idracPoolRemoteFAN_v3(IdracIP, mainQueue)))
-                
-            
-            # for CiscoIP in CISCO_HOST_LIST:
-            #     tasks.append(tg.create_task(ciscoPoolRemote(CiscoIP, mainQueue)))
+                tg.create_task(idracPoolRemote_v3(IdracIP, mainQueue))
+            # FANS
+            #     tg.create_task(idracPoolRemoteFAN_v3(IdracIP, mainQueue))
 
-        sleep(20)
+            # CISCO devices
+            # for CiscoIP in CISCO_HOST_LIST:
+            #     tg.create_task(ciscoPoolRemote(CiscoIP, mainQueue))
+
+        await asyncio.sleep(20)
 
 
 
@@ -75,10 +81,13 @@ async def main():
     # print("End of code")
 
 if __name__ == "__main__":
+    # qu = asyncio.Queue()
+    # asyncio.run(idracPoolRemote_v3("192.168.20.7", qu))
 
-
-    loop = asyncio.get_event_loop()
-    task = loop.create_task(main())
+    asyncio.run(main())
+    
+    # loop = asyncio.get_event_loop()
+    # task = loop.create_task(main())
 
 
 

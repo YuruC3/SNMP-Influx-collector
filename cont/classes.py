@@ -92,6 +92,7 @@ class snmpPyIDRACData():
     inletTemp: float
     exhaustTemp: float
     cpu1Temp: float
+    uptimeS: int
     uptimeH: float
 
     # optional fields
@@ -125,6 +126,7 @@ class snmpPyCiscoData():
     inletTemp: float
     exhaustTemp: float
     cpu1Temp: float
+    uptimeS: int
     uptimeH: float
 
     # optional fields
@@ -145,6 +147,7 @@ class snmpPyCiscoData():
             f"Exhaust {self.exhaustTemp} C\n"
             f"CPU1 {self.cpu1Temp} C\n"
             f"CPU2 {self.cpu2Temp} C\n"
+            f"Uptime {self.uptimeS} Seconds\n"
             f"Uptime {self.uptimeH} Hours\n"
             f"Uptime {self.uptimeD} Days"
             )
