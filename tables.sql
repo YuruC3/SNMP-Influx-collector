@@ -44,6 +44,7 @@ CREATE TABLE IDRACmeasurement (
     hostname VARCHAR(64) NOT NULL,
     powerDrawPSU1 DECIMAL(7,2),
     powerDrawPSU2 DECIMAL(7,2) NULL,
+    powerDrawBoard DECIMAL(7,2) NULL, -- Thing for IDRAC9 as it has a Raw Power Consumption value
     voltagePSU1 DECIMAL(7,2),
     voltagePSU2 DECIMAL(7,2) NULL,
     inletTemp DECIMAL(5,2),
