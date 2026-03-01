@@ -1,0 +1,9 @@
+! NXOS 9.3
+
+! ACL
+! ip access-list SNMP-SERVERS
+!   permit ip 192.168.1.50/32 any
+
+snmp-server user snmpuser auth sha 123 priv aes-128 123
+! Make the user RO 
+username snmpuser role network-operator 

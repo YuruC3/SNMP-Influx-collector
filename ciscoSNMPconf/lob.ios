@@ -1,0 +1,6 @@
+! IOS 15.0(1)SE2
+
+! Optional
+access-list 10 permit 192.168.1.50
+snmp-server group MONITOR v3 priv access 10
+snmp-server user username MONITOR v3 auth sha password123 priv aes 128 password123
