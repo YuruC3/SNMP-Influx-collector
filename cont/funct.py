@@ -263,8 +263,8 @@ async def ciscoPoolRemote(remoteIP: str, queueToInsrt: asyncio.Queue):
     # return returnObj
     await queueToInsrt.put(returnDict)
 
-# IDRAC get data for snmpPyIDRACData class
-async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
+# IDRAC78 get data for snmpPyIDRACData class
+async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     snmpEngine = SnmpEngine()
 
     iterator = get_cmd(
@@ -281,17 +281,17 @@ async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.1")),    #1
         ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.2")),    #2
         # (Volts)
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.31")),    #3
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.32")),    #4
+        # ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.31")),    #3
+        # ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.32")),    #4
 
         # Get Inlet, Exhaust, CPU1, CPU2
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.1")),    #5
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.2")),    #6
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.3")),    #7
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.4")),    #8
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.1")),    #3
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.2")),    #4
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.3")),    #5
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.4")),    #6
 
         # Uptime in seconds
-        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.2.5.0")),    #9
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.2.5.0")),    #7
     )
 
     errorIndication, errorStatus, errorIndex, varBinds = await iterator
@@ -309,8 +309,54 @@ async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         for oid, val in varBinds:
             print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
 
-    # for element in varBinds:
-    #     print(element)
+    iterator2 = get_cmd(
+        snmpEngine,
+        # SNMPv1 = mpModel=0 (SNMPv2c would be mpModel=1)
+        # CommunityData("public", mpModel=0),
+        USMUSRDATA,
+        await UdpTransportTarget.create((remoteIP, SNMPORT)),
+        ContextData(),
+        # Hostname (sysName.0)
+        ObjectType(ObjectIdentity(".1.3.6.1.2.1.1.5.0")),                            #0
+
+        # PSU1 powerDraw and PSU2 powerDraw (Amps)
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.1")),    #1
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.2")),    #2
+        # (Volts)
+        # ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.31")),    #3
+        # ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.32")),    #4
+
+        # Get Inlet, Exhaust, CPU1, CPU2
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.1")),    #3
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.2")),    #4
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.3")),    #5
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.4")),    #6
+
+        # Uptime in seconds
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.2.5.0")),    #7
+    )
+
+    errorIndication2, errorStatus2, errorIndex2, varBinds2 = await iterator2
+
+    if errorIndication2:
+        print(errorIndication2)
+    elif errorStatus2:
+        print(
+            "{} at {}".format(
+                errorStatus2.prettyPrint(),
+                errorIndex2 and varBinds[int(errorIndex2) - 1][0] or "?",
+            )
+        )
+    else:
+        for oid, val in varBinds2:
+            print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
+
+
+    voltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
+
+    voltList = []
+    for thing in voltResult:
+        voltList.append(voltResult[thing])
 
     snmpEngine.close_dispatcher()
     # print(varBinds[1][-1])
@@ -319,27 +365,27 @@ async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         hostname=varBinds[0][-1], 
         # Hostname
 
-        powerDrawPSU1=round((int(varBinds[1][-1]) / 10) * (int(varBinds[3][-1]) / 1000), ROUND_PREC),
-        powerDrawPSU2=round((int(varBinds[2][-1]) / 10) * (int(varBinds[4][-1]) / 1000), ROUND_PREC),
+        powerDrawPSU1=round((int(varBinds[1][-1]) / 10) * (int(voltList[0]) / 1000), ROUND_PREC),
+        powerDrawPSU2=round((int(varBinds[2][-1]) / 10) * (int(voltList[1]) / 1000), ROUND_PREC),
         # PSU1 and PSU2 power draw in Watts
 
-        voltagePSU1=round((int(varBinds[3][-1]) / 1000), ROUND_PREC),
-        voltagePSU2=round((int(varBinds[4][-1]) / 1000), ROUND_PREC),
+        voltagePSU1=round((int(voltList[0]) / 1000), ROUND_PREC),
+        voltagePSU2=round((int(voltList[1]) / 1000), ROUND_PREC),
         # PSU1 and PSU2 voltages
 
-        inletTemp=int(varBinds[5][-1] / 10),
-        exhaustTemp=int(varBinds[6][-1] / 10),
+        inletTemp=int(varBinds[3][-1] / 10),
+        exhaustTemp=int(varBinds[4][-1] / 10),
         # Inlet and Exhaust temp
 
-        cpu1Temp=int(varBinds[7][-1] / 10),
-        cpu2Temp=int(varBinds[8][-1] / 10),
+        cpu1Temp=int(varBinds[5][-1] / 10),
+        cpu2Temp=int(varBinds[6][-1] / 10),
         # CPU1 and CPU2 temp
 
-        uptimeS=int(varBinds[9][-1]),
+        uptimeS=int(varBinds[7][-1]),
         # seconds
-        uptimeH=round(((int(varBinds[9][-1]) / 60) / 60), ROUND_PREC),
+        uptimeH=round(((int(varBinds[7][-1]) / 60) / 60), ROUND_PREC),
         # seconds->minutes->hours
-        uptimeD=round((((int(varBinds[9][-1]) / 60) / 60) / 24), ROUND_PREC)
+        uptimeD=round((((int(varBinds[7][-1]) / 60) / 60) / 24), ROUND_PREC)
         # seconds->minutes->hours->days
     )
 
@@ -350,6 +396,110 @@ async def idracPoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     }
     # return returnObj
     await queueToInsrt.put(returnDict)
+
+
+
+# IDRAC get data for snmpPyIDRACData class
+async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
+    snmpEngine = SnmpEngine()
+
+    iterator = get_cmd(
+        snmpEngine,
+        # SNMPv1 = mpModel=0 (SNMPv2c would be mpModel=1)
+        # CommunityData("public", mpModel=0),
+        USMUSRDATA,
+        await UdpTransportTarget.create((remoteIP, SNMPORT)),
+        ContextData(),
+        # Hostname (sysName.0)
+        ObjectType(ObjectIdentity(".1.3.6.1.2.1.1.5.0")),                            #0
+
+        # PSU1 powerDraw and PSU2 powerDraw (Amps)
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.1")),    #1
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.2")),    #2
+        
+        # (Volts) nevermid, do not querry 
+        # ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.33")),    #3
+        # ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1.34")),    #4
+
+        # Get Inlet, Exhaust, CPU1, CPU2
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.3")),    #3
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.4")),    #4
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.1")),    #5
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.700.20.1.6.1.2")),    #6
+
+        # Uptime in seconds
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.2.5.0")),    #7
+
+        # Raw board power draw
+        ObjectType(ObjectIdentity(".1.3.6.1.4.1.674.10892.5.4.600.30.1.6.1.3")),    #8
+
+    )
+
+    errorIndication, errorStatus, errorIndex, varBinds = await iterator
+
+    if errorIndication:
+        print(errorIndication)
+    elif errorStatus:
+        print(
+            "{} at {}".format(
+                errorStatus.prettyPrint(),
+                errorIndex and varBinds[int(errorIndex) - 1][0] or "?",
+            )
+        )
+    else:
+        for oid, val in varBinds:
+            print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
+
+    # .1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1
+    voltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
+
+    voltList = []
+    for thing in voltResult:
+        voltList.append(voltResult[thing])
+
+    snmpEngine.close_dispatcher()
+    # print(varBinds[1][-1])
+    # print(type(varBinds[1][-1]))
+    returnObj = snmpPyIDRACData(
+        hostname=varBinds[0][-1], 
+        # Hostname
+
+        powerDrawPSU1=round((int(varBinds[1][-1]) / 10) * (int(voltList[0]) / 1000), ROUND_PREC),
+        powerDrawPSU2=round((int(varBinds[2][-1]) / 10) * (int(voltList[1]) / 1000), ROUND_PREC),
+        # PSU1 and PSU2 power draw in Watts
+
+        # Total board power consumption
+        powerDrawBoard=int(varBinds[8][-1]),
+
+        voltagePSU1=round((int(voltList[0]) / 1000), ROUND_PREC),
+        voltagePSU2=round((int(voltList[1]) / 1000), ROUND_PREC),
+        # PSU1 and PSU2 voltages
+
+        inletTemp=int(varBinds[3][-1] / 10),
+        exhaustTemp=int(varBinds[4][-1] / 10),
+        # Inlet and Exhaust temp
+
+        cpu1Temp=int(varBinds[5][-1] / 10),
+        cpu2Temp=int(varBinds[6][-1] / 10),
+        # CPU1 and CPU2 temp
+
+        uptimeS=int(varBinds[7][-1]),
+        # seconds
+        uptimeH=round(((int(varBinds[7][-1]) / 60) / 60), ROUND_PREC),
+        # seconds->minutes->hours
+        uptimeD=round((((int(varBinds[7][-1]) / 60) / 60) / 24), ROUND_PREC)
+        # seconds->minutes->hours->days
+    )
+
+    returnDict = {
+        "source": "IDRAC",
+        "value": returnObj,
+        "type": "snmpPyIDRACData"
+    }
+    # return returnObj
+    await queueToInsrt.put(returnDict)
+
+
 
 
 # IDRAC get FAN data

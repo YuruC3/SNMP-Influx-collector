@@ -10,7 +10,8 @@ from classes import *
 
 # Program ENV---------------------------------------
 try:
-    IDRAC_HOST_LIST: Final[list] = os.getenv("IDRAC_HOST_LIST", None).split(";")
+    IDRAC78_HOST_LIST: Final[list] = os.getenv("IDRAC78_HOST_LIST", None).split(";")
+    IDRAC9_HOST_LIST: Final[list] = os.getenv("IDRAC9_HOST_LIST", None).split(";")
     CISCO_HOST_LIST: Final[list] = os.getenv("CISCO_HOST_LIST", None).split(";")
 except:
     raise Exception("No IDRAC hosts variable")
@@ -19,19 +20,24 @@ except:
 
 # Flightchecks-------------------------------------------
 # if HOST_LIST empty, raise Exception No hosts passed
-if not IDRAC_HOST_LIST and not CISCO_HOST_LIST:
+if not IDRAC78_HOST_LIST and not CISCO_HOST_LIST and not IDRAC9_HOST_LIST:
     raise Exception("No hosts passed\nExiting...")
 # for host in HOST_LIST check if valid IP and create a list with strings
-for idracHost in IDRAC_HOST_LIST:
+for idrac78Host in IDRAC78_HOST_LIST:
     try:
-        ip = str(ipaddress.IPv4Address(idracHost))
+        ip = str(ipaddress.IPv4Address(idrac78Host))
     except ValueError:
-        raise Exception(f" IP {ip} for IDRAC devices is invalid.\nExiting...")
+        raise Exception(f" IP {ip} for IDRAC7/8 devices is invalid.\nExiting...")
 for ciscoHost in CISCO_HOST_LIST:
     try:
         ip = str(ipaddress.IPv4Address(ciscoHost))
     except ValueError:
         raise Exception(f" IP {ip} for Cisco devices is invalid.\nExiting...")
+for idrac9Host in IDRAC9_HOST_LIST:
+    try:
+        ip = str(ipaddress.IPv4Address(idrac9Host))
+    except ValueError:
+        raise Exception(f" IP {ip} for IDRAC9 devices is invalid.\nExiting...")
 
 # Done under "Program ENV" on line ~18
 
@@ -52,8 +58,10 @@ async def main():
         
         # IDRAC part
         async with asyncio.TaskGroup() as tg:
-            for IdracIP in IDRAC_HOST_LIST:
-                tg.create_task(idracPoolRemote_v3(IdracIP, mainQueue))
+            for Idrac78IP in IDRAC78_HOST_LIST:
+                tg.create_task(idrac7_8PoolRemote_v3(Idrac78IP, mainQueue))
+            for Idrac9IP in IDRAC9_HOST_LIST:
+                tg.create_task(idrac9PoolRemote_v3(Idrac9IP, mainQueue))
             # FANS
             #     tg.create_task(idracPoolRemoteFAN_v3(IdracIP, mainQueue))
 

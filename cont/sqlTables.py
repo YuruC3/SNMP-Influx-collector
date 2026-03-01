@@ -11,6 +11,7 @@ idracMeasurement = Table(
 
     Column("powerDrawPSU1", Numeric(7, 2)),
     Column("powerDrawPSU2", Numeric(7, 2)),
+    Column("powerDrawBoard", Numeric(7, 2)),
     Column("voltagePSU1", Numeric(7, 2)),
     Column("voltagePSU2", Numeric(7, 2)),
 

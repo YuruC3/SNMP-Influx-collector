@@ -99,6 +99,7 @@ class snmpPyIDRACData():
     uptimeD: float | None = None
     cpu2Temp: float | None = None
     powerDrawPSU2: int | None = None
+    powerDrawBoard: int | None = None
     voltagePSU2: int | None = None
 
 
@@ -107,6 +108,7 @@ class snmpPyIDRACData():
             f"{self.hostname}\n"
             f"PSU1 {self.powerDrawPSU1} Watts\n"
             f"PSU2 {self.powerDrawPSU2} Watts\n"
+            f"Board {self.powerDrawBoard} Watts\n"
             f"PSU1 {self.voltagePSU1} Volts\n"
             f"PSU2 {self.voltagePSU2} Volts\n"
             f"Inlet {self.inletTemp} C\n"
