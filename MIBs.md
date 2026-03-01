@@ -1,4 +1,4 @@
-# IDRAC8
+# IDRAC7/8
 
 ## temperatureProbeReading
 
@@ -65,6 +65,56 @@ Get the CPU name(s)
 
 Uptime in seconds
 
+
+
+# IDRAC9
+
+Here the power OID is different :(
+
+
+## Power 
+
+Here are the OIDs for string 
+
+SNMPv2-SMI::enterprises.674.10892.5.4.600.30.1.8.1.1 = STRING: "PS1 Current 1"
+SNMPv2-SMI::enterprises.674.10892.5.4.600.30.1.8.1.2 = STRING: "PS2 Current 2"
+SNMPv2-SMI::enterprises.674.10892.5.4.600.30.1.8.1.3 = STRING: "System Board Pwr Consumption"
+
+### Current and Watts
+
+and here are OIDs for intigers. They show miliamps*100. So when ...6.1.1 show 2 it means 2/10 so 100mA = 0.1A. 
+
+BUT the last one is the total board power which is in Watts
+
+SNMPv2-SMI::enterprises.674.10892.5.4.600.30.1.6.1.1 = INTEGER: 2
+SNMPv2-SMI::enterprises.674.10892.5.4.600.30.1.6.1.2 = INTEGER: 10
+SNMPv2-SMI::enterprises.674.10892.5.4.600.30.1.6.1.3 = INTEGER: 240
+
+### Voltage
+
+Here are OIDs for Voltage. They need to be divided by 1000 to get 236.000 Volts
+
+PSU1 and PSU2
+
+SNMPv2-SMI::enterprises.674.10892.5.4.600.20.1.6.1.33 = INTEGER: 236000
+SNMPv2-SMI::enterprises.674.10892.5.4.600.20.1.6.1.34 = INTEGER: 236000
+
+## Temperatures
+
+Here are the strings for the temp readings
+
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.8.1.1 = STRING: "CPU1 Temp"
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.8.1.2 = STRING: "CPU2 Temp"
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.8.1.3 = STRING: "System Board Inlet Temp"
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.8.1.4 = STRING: "System Board Exhaust Temp"
+
+
+These are temperature readings for inlet and exhaust. They need to be divided by 10 so that 260/10 = 26 C
+
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.6.1.1 = INTEGER: 550
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.6.1.2 = INTEGER: 560
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.6.1.3 = INTEGER: 260
+SNMPv2-SMI::enterprises.674.10892.5.4.700.20.1.6.1.4 = INTEGER: 310
 
 
 
