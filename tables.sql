@@ -22,6 +22,19 @@ SET sql_mode = 'NO_AUTO_VALUE_ON_ZERO';
 
 SET NAMES utf8mb4;
 
+-- Event for deleting rows older than 3 days
+-- Enable scheduler
+SET GLOBAL event_scheduler = ON;
+
+-- Event that runs every hour and deletes old rows
+-- Delete 2,5k rows at the time to avoid long locks
+CREATE EVENT IF NOT EXISTS evPurgeOldIdracRows
+ON SCHEDULE EVERY 1 HOUR
+DO
+  DELETE FROM IDRACmeasurement
+  WHERE time_stamp < (NOW() - INTERVAL 3 DAY)
+  LIMIT 2500;
+
 
 
 -- New universal table type
