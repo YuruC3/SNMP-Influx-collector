@@ -180,6 +180,8 @@ async def fluxWriter(
 async def ALLdbWriter(inputQueue: asyncio.Queue) -> None:
     while True:
 
+        # print(inputQueue)
+
         qu = await inputQueue.get()
 
         try:
@@ -193,7 +195,7 @@ async def ALLdbWriter(inputQueue: asyncio.Queue) -> None:
                     case 3:
                         print("No engine defined")
                     case _:
-                        print("nice")
+                        print("Inserted in SQL")
             if USEINFLUX:
                 fluxResult = await fluxWriter(qu)
                 match fluxResult:
@@ -202,7 +204,7 @@ async def ALLdbWriter(inputQueue: asyncio.Queue) -> None:
                     case 2:
                         print("Error with initializing Inxlux variables")
                     case _:
-                        print("nice")
+                        print("Inserted to InfluxDB")
         except Exception as e:
             print(e)
         finally:
@@ -457,6 +459,9 @@ async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     psu2PowerDraw = None
     psu2Amperage = None
     psu2Voltage = None
+    psu1PowerDraw = None
+    psu1Amperage = None
+    psu1Voltage = None
 
     if hasPSU2:
         psu2PowerDraw = round((int(currentsCurrentResults[2]) / 10) * (int(voltList[1]) / 1000), ROUND_PREC)
