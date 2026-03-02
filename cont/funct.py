@@ -155,6 +155,7 @@ async def fluxWriter(
     .tag("HOSTNAME", inpDict["value"].hostname)
     .field("PowerDrawPSU1", inpDict["value"].powerDrawPSU1)
     .field("PowerDrawPSU2", inpDict["value"].powerDrawPSU2)
+    .field("TotalBoardPower", inpDict["value"].powerDrawBoard)
     .field("VoltagePSU1", inpDict["value"].voltagePSU1)
     .field("VoltagePSU2", inpDict["value"].voltagePSU2)
     .field("InletTemperature", inpDict["value"].inletTemp)
@@ -217,6 +218,7 @@ async def ALLdbWriter(inputQueue: asyncio.Queue) -> None:
 
 # Cisco
 async def ciscoPoolRemote(remoteIP: str, queueToInsrt: asyncio.Queue):
+    print("starting work on ", remoteIP)
     snmpEngine = SnmpEngine()
 
     iterator = get_cmd(
@@ -265,6 +267,7 @@ async def ciscoPoolRemote(remoteIP: str, queueToInsrt: asyncio.Queue):
 
 # IDRAC78 get data for snmpPyIDRACData class
 async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
+    print("starting work on ", remoteIP)
 
     snmpEngine = SnmpEngine()
     # try CPU2 as CPU1 is always there 
@@ -303,13 +306,6 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     # PSU1 OID name, [PSU2 OID name], system board power draw 
     currentsNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.8")
 
-    # PSU1 voltage, [PSU2 voltage]
-    # psusVoltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
-    # In reversed order. PSU1 OID name [PSU2 OID name]
-    # currentsNamesResults[-1] would be "PS2 Voltage 2" and currentsNamesResults[-2] would be "PS1 Voltage 1" IF two PSUs are installed. 
-    # Otherwise currentsNamesResults[-1] would be "PS1 Voltage 1"
-    # psusNamesResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.8")
-
     # Inlet OID name .1, [Exhaust OID name], CPU1 temp OID name, [CPU2 tempOID name]
     sensorNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.8")
     # Inlet temp, [Exhaust temp], CPU1 temp, [CPU2 temp]
@@ -322,27 +318,11 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     hasCPU2 = any("cpu2" in str(thing).lower() for thing in sensorNamesResults.values())
     hasPSU2 = any("ps2" in str(thing).lower() for thing in currentsNamesResults.values())
 
+    snmpEngine.close_dispatcher()
+
     voltList = []
     for thing in voltResult:
         voltList.append(voltResult[thing])
-
-    snmpEngine.close_dispatcher()
-
-    # print("\n")
-    # print(remoteIP)
-    # print("\n")
-    # print(currentsCurrentResults, hasPSU2)
-    # print("\n")
-    # print(currentsNamesResults, hasCPU2)
-    # print("\n")
-    # print(psusVoltResult)
-    # print("\n")
-    # # print(psusNamesResult)
-    # # print("\n")
-    # print(sensorNamesResults)
-    # print("\n")
-    # print(sensorValuesResults, hasExhaust)
-    # print("\n")
 
 
     # PSU2 values and board power
@@ -358,7 +338,7 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     else:
         boardPowerDraw = int(currentsCurrentResults[2])
 
-    # Exhaustm CPU1 and CPU2 temp
+    # Exhaust CPU1 and CPU2 temp
 
     exhaustTemp = None
     cpu2Temp = None
@@ -375,13 +355,6 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     else: 
         cpu1Temp = int(sensorValuesResults[2]) / 10
     
-
-
-
-
-    
-    # Prepare what to insert
-
 
     returnObj = snmpPyIDRACData(
         hostname=mainVarBinds[0][-1], 
@@ -426,6 +399,7 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
 
 # IDRAC get data for snmpPyIDRACData class
 async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
+    print("starting work on ", remoteIP)
     snmpEngine = SnmpEngine()
 
     iterator = get_cmd(
@@ -479,7 +453,6 @@ async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     hasCPU2 = any("cpu2" in str(thing).lower() for thing in sensorNamesResults.values())
     hasPSU2 = any("ps2" in str(thing).lower() for thing in currentsNamesResults.values())
 
-
     # PSU2 values and board power
     psu2PowerDraw = None
     psu2Amperage = None
@@ -493,7 +466,7 @@ async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     else:
         boardPowerDraw = int(currentsCurrentResults[2])
 
-    # Exhaustm CPU1 and CPU2 temp
+    # Exhaust CPU1 and CPU2 temp
 
     exhaustTemp = None
     inletTemp = None
@@ -510,12 +483,7 @@ async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         cpu2Temp = int(sensorValuesResults[2]) / 10
     else: 
         inletTemp = int(sensorValuesResults[2]) / 10
-    
 
-
-
-    # print(varBinds[1][-1])
-    # print(type(varBinds[1][-1]))
     returnObj = snmpPyIDRACData(
         hostname=mainVarBinds[0][-1], 
         # Hostname
