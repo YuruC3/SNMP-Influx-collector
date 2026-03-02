@@ -15,17 +15,22 @@ USER pyusr
 
 WORKDIR /app/snmpython/
 
-
 COPY ./requirements.txt /app/snmpython/
 RUN python3 -m venv pyvenv && \
     pyvenv/bin/python3 -m pip install --upgrade pip && \
     pyvenv/bin/pip3 install -r requirements.txt
 
-COPY ./main.py /app/snmpython/
-COPY ./funct.py /app/snmpython/
-COPY ./classes.py /app/snmpython/
-COPY ./sqlTables.py /app/snmpython/
-# COPY ../code/MIBs/ /app/snmpython/MIBs
+COPY ./mainRE.py /app/snmpython/
+
+RUN mkdir cisco db idrac models snmp
+
+ADD cisco /app/snmpython/cisco
+ADD db /app/snmpython/db
+ADD idrac /app/snmpython/idrac
+ADD models /app/snmpython/models
+ADD snmp /app/snmpython/snmp
+
+    # COPY ../code/MIBs/ /app/snmpython/MIBs
 
 # COPY ./entrypoint.sh /entrypoint.sh
 # RUN chmod +x /entrypoint.sh
@@ -45,4 +50,4 @@ COPY ./sqlTables.py /app/snmpython/
 # HEALTHCHECK --interval=3s --timeout=3s --retries=3 \
 #   CMD curl --fail http://127.0.0.1:8181/health || exit 1
 
-CMD ["/app/snmpython/pyvenv/bin/python3", "/app/snmpython/main.py"]
+CMD ["/app/snmpython/pyvenv/bin/python3", "/app/snmpython/mainRE.py"]

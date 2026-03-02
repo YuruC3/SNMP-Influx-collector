@@ -1,12 +1,14 @@
-import ipaddress, os, re, time, funct, classes, asyncio
+import ipaddress, os, re, time, asyncio
 # SNMP
 from pysnmp.hlapi.v3arch.asyncio import *
 # QoL
 from typing import Annotated, Final
 # functions
-from funct import *
-# additional classes
-from classes import *
+from db.collectiveWriter import ALLdbIDRACWriter
+# idrac SNMP
+from idrac import idrac78, idrac9
+# Cisco hosts
+# from cisco import lob, nyater
 
 # Program ENV---------------------------------------
 try:
@@ -52,16 +54,16 @@ async def main():
     # fanQueue    = asyncio.Queue()
     mainQueue = asyncio.Queue(maxsize=225)
     
-    asyncio.create_task(ALLdbWriter(mainQueue))
+    asyncio.create_task(ALLdbIDRACWriter(mainQueue))
 
     while True:
         
         # IDRAC part
         async with asyncio.TaskGroup() as tg:
             for Idrac78IP in IDRAC78_HOST_LIST:
-                tg.create_task(idrac7_8PoolRemote_v3(Idrac78IP, mainQueue))
+                tg.create_task(idrac78.idrac7_8PoolRemote_v3(Idrac78IP, mainQueue))
             for Idrac9IP in IDRAC9_HOST_LIST:
-                tg.create_task(idrac9PoolRemote_v3(Idrac9IP, mainQueue))
+                tg.create_task(idrac9.idrac9PoolRemote_v3(Idrac9IP, mainQueue))
             # FANS
             #     tg.create_task(idracPoolRemoteFAN_v3(IdracIP, mainQueue))
 
@@ -91,7 +93,7 @@ async def main():
 if __name__ == "__main__":
     # qu = asyncio.Queue()
     # asyncio.run(idracPoolRemote_v3("192.168.20.7", qu))
-
+    print("Starting")
     asyncio.run(main())
     
     # loop = asyncio.get_event_loop()
