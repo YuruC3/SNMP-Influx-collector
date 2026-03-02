@@ -91,10 +91,73 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
 
     snmpEngine.close_dispatcher()
 
+    print(voltResult)
+
+    # Exhaust CPU1 and CPU2 temp
+
+    exhaustTemp = None
+    cpu2Temp = None
+    if len(currentsCurrentResults) == 1 and int(mainVarBinds[1][-1]) == 0:
+        exhaustTemp = int(sensorValuesResults[2]) / 10
+        cpu1Temp = None
+    elif hasExhaust and hasCPU2:
+        exhaustTemp = int(sensorValuesResults[2]) / 10
+        cpu1Temp = int(sensorValuesResults[3]) / 10
+        cpu2Temp = int(sensorValuesResults[4]) / 10
+    elif hasExhaust and not hasCPU2:
+        exhaustTemp = int(sensorValuesResults[2]) / 10
+        cpu1Temp = int(sensorValuesResults[3]) / 10
+    elif hasCPU2 and not hasExhaust:
+        cpu1Temp = int(sensorValuesResults[3]) / 10
+        cpu2Temp = int(sensorValuesResults[4]) / 10
+    else: 
+        cpu1Temp = int(sensorValuesResults[2]) / 10
+       
+    # If power draw is 0; I.E. if server is turned off
+    if len(currentsCurrentResults) == 1 and int(mainVarBinds[1][-1]) == 0:
+        returnObj = snmpPyIDRACData(
+            hostname=mainVarBinds[0][-1], 
+            # Hostname
+
+            powerDrawPSU1=None,
+            powerDrawPSU2=None,
+            # PSU1 and PSU2 power draw in Watts
+
+            # board power draw
+            powerDrawBoard=None,
+
+            voltagePSU1=None,
+            voltagePSU2=None,
+            # PSU1 and PSU2 voltages
+
+            inletTemp=(int(sensorValuesResults[1]) / 10),
+            exhaustTemp=exhaustTemp,
+            # Inlet and Exhaust temp
+
+            cpu1Temp=None,
+            cpu2Temp=None,
+            # CPU1 and CPU2 temp
+
+            uptimeS=int(mainVarBinds[1][-1]),
+            # seconds
+            uptimeH=round(((int(mainVarBinds[1][-1]) / 60) / 60), ROUND_PREC),
+            # seconds->minutes->hours
+            uptimeD=round((((int(mainVarBinds[1][-1]) / 60) / 60) / 24), ROUND_PREC)
+            # seconds->minutes->hours->days
+        )
+        returnDict = {
+            "source": "IDRAC",
+            "value": returnObj,
+            "type": "snmpPyIDRACData"
+        }
+        # return returnObj
+        await queueToInsrt.put(returnDict)  
+        return 1
+
+
     voltList = []
     for thing in voltResult:
         voltList.append(voltResult[thing])
-
 
     # PSU2 values and board power
     psu2PowerDraw = None
@@ -109,23 +172,6 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     else:
         boardPowerDraw = int(currentsCurrentResults[2])
 
-    # Exhaust CPU1 and CPU2 temp
-
-    exhaustTemp = None
-    cpu2Temp = None
-    if hasExhaust and hasCPU2:
-        exhaustTemp = int(sensorValuesResults[2]) / 10
-        cpu1Temp = int(sensorValuesResults[3]) / 10
-        cpu2Temp = int(sensorValuesResults[4]) / 10
-    elif hasExhaust and not hasCPU2:
-        exhaustTemp = int(sensorValuesResults[2]) / 10
-        cpu1Temp = int(sensorValuesResults[3]) / 10
-    elif hasCPU2 and not hasExhaust:
-        cpu1Temp = int(sensorValuesResults[3]) / 10
-        cpu2Temp = int(sensorValuesResults[4]) / 10
-    else: 
-        cpu1Temp = int(sensorValuesResults[2]) / 10
-    
 
     returnObj = snmpPyIDRACData(
         hostname=mainVarBinds[0][-1], 
