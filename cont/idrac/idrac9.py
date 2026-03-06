@@ -56,6 +56,10 @@ async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
     errorIndication, errorStatus, errorIndex, mainVarBinds = await iterator
 
     if errorIndication:
+        if errorIndication == "No SNMP response received before timeout":
+                print(f"Host {remoteIP} timed out.\nContinuing...")
+                snmpEngine.close_dispatcher()
+                return 1
         print(errorIndication)
     elif errorStatus:
         print(

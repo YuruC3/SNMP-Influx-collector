@@ -53,6 +53,10 @@ async def walk_column_v3(snmpEngine, remoteIP: str, base_oid: str) -> dict:
         lexicographicMode=False,
     ):
         if errInd:
+            print(f"\n\n{errInd}\n\n")
+            if "No SNMP response received before timeout" in errInd:
+                print(f"Host {remoteIP} timed out.\nContinuing...")
+                return 1
             raise RuntimeError(errInd)
         if errStat:
             raise RuntimeError(errStat.prettyPrint())

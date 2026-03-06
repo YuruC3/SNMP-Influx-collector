@@ -91,8 +91,6 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
 
     snmpEngine.close_dispatcher()
 
-    print(voltResult)
-
     # Exhaust CPU1 and CPU2 temp
 
     exhaustTemp = None
