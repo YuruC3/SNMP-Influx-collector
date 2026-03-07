@@ -2,6 +2,7 @@ import asyncio, os
 from typing import Annotated, Final
 # SNMP
 from pysnmp.hlapi.v3arch.asyncio import *
+from models.snmpTimeOut import SNMPTimeoutError
 # SNMP ENV-------------------------------------------
 ROUND_PREC: Final[int] = int(os.getenv("ROUND_PREC", 2))
 
@@ -54,9 +55,8 @@ async def walk_column_v3(snmpEngine, remoteIP: str, base_oid: str) -> dict:
     ):
         if errInd:
             print(f"\n\n{errInd}\n\n")
-            if "No SNMP response received before timeout" in errInd:
-                print(f"Host {remoteIP} timed out.\nContinuing...")
-                return 1
+            if "No SNMP response received before timeout" in str(errInd):
+                raise SNMPTimeoutError(f"Host {remoteIP} timed out while walking {base_oid}")
             raise RuntimeError(errInd)
         if errStat:
             raise RuntimeError(errStat.prettyPrint())

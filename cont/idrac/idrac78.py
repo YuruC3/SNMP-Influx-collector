@@ -71,23 +71,30 @@ async def idrac7_8PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
         for oid, val in mainVarBinds:
             print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
 
+    try:
+        # Get PSU1 current, [PSU2 current], total board power draw in watts
+        currentsCurrentResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.6")
+        # PSU1 OID name, [PSU2 OID name], system board power draw 
+        currentsNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.8")
 
-    # Get PSU1 current, [PSU2 current], total board power draw in watts
-    currentsCurrentResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.6")
-    # PSU1 OID name, [PSU2 OID name], system board power draw 
-    currentsNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.8")
+        # Inlet OID name .1, [Exhaust OID name], CPU1 temp OID name, [CPU2 tempOID name]
+        sensorNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.8")
+        # Inlet temp, [Exhaust temp], CPU1 temp, [CPU2 temp]
+        sensorValuesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.6")
 
-    # Inlet OID name .1, [Exhaust OID name], CPU1 temp OID name, [CPU2 tempOID name]
-    sensorNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.8")
-    # Inlet temp, [Exhaust temp], CPU1 temp, [CPU2 temp]
-    sensorValuesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.6")
+        # .1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1
+        voltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
 
-    # .1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1
-    voltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
+        hasExhaust = any("exhaust" in str(thing).lower() for thing in sensorNamesResults.values())
+        hasCPU2 = any("cpu2" in str(thing).lower() for thing in sensorNamesResults.values())
+        hasPSU2 = any("ps2" in str(thing).lower() for thing in currentsNamesResults.values())
 
-    hasExhaust = any("exhaust" in str(thing).lower() for thing in sensorNamesResults.values())
-    hasCPU2 = any("cpu2" in str(thing).lower() for thing in sensorNamesResults.values())
-    hasPSU2 = any("ps2" in str(thing).lower() for thing in currentsNamesResults.values())
+    except SNMPTimeoutError as e:
+        print(f"{e}\nContinuing regardless...")
+        return 1
+    except RuntimeError as e:
+        print(f"SNMP error on {remoteIP}: {e}")
+        return 1
 
     snmpEngine.close_dispatcher()
 

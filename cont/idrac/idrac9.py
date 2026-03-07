@@ -1,6 +1,10 @@
 import os, asyncio
+
 from models.idracModel import snmpPyIDRACData
+from models.snmpTimeOut import SNMPTimeoutError
+
 from snmp.walker import walk_column_v3
+
 from typing import Annotated, Final
 
 # SNMP
@@ -73,21 +77,29 @@ async def idrac9PoolRemote_v3(remoteIP: str, queueToInsrt: asyncio.Queue):
             print(f"{oid.prettyPrint()} = {val.prettyPrint()}")
 
 
+    try:
 
-    # Get PSU1 current, [PSU2 current], total board power draw in watts
-    currentsCurrentResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.6")
-    # PSU1 OID name, [PSU2 OID name], system board power draw 
-    currentsNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.8")
+        # Get PSU1 current, [PSU2 current], total board power draw in watts
+        currentsCurrentResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.6")
+        # PSU1 OID name, [PSU2 OID name], system board power draw 
+        currentsNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.30.1.8")
 
-    # CPU1 OID name .1, [CPU2 OID name], Inlet temp OID name, [Exhaust temp OID name]
-    sensorNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.8")
-    # CPU1 temp, [CPU2 temp], Inlet temp, [Exhaust temp]
-    sensorValuesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.6")
+        # CPU1 OID name .1, [CPU2 OID name], Inlet temp OID name, [Exhaust temp OID name]
+        sensorNamesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.8")
+        # CPU1 temp, [CPU2 temp], Inlet temp, [Exhaust temp]
+        sensorValuesResults = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.700.20.1.6")
 
-    # .1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1
-    voltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
+        # .1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1
+        voltResult = await walk_column_v3(snmpEngine, remoteIP, ".1.3.6.1.4.1.674.10892.5.4.600.20.1.6.1")
+    except SNMPTimeoutError as e:
+        print(f"{e}\nContinuing regardless...")
+        return 1
+    except RuntimeError as e:
+        print(f"SNMP error on {remoteIP}: {e}")
+        return 1
 
     snmpEngine.close_dispatcher()
+
 
     hasExhaust = any("exhaust" in str(thing).lower() for thing in sensorNamesResults.values())
     hasCPU2 = any("cpu2" in str(thing).lower() for thing in sensorNamesResults.values())
