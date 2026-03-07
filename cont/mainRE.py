@@ -18,6 +18,7 @@ try:
 except:
     raise Exception("No IDRAC hosts variable")
 
+GET_INTERVAL: Final[int] = int(os.getenv("GET_INTERVAL", 60))
 
 
 # Flightchecks-------------------------------------------
@@ -71,7 +72,7 @@ async def main():
             # for CiscoIP in CISCO_HOST_LIST:
             #     tg.create_task(ciscoPoolRemote(CiscoIP, mainQueue))
 
-        await asyncio.sleep(20)
+        await asyncio.sleep(GET_INTERVAL)
 
 
 
