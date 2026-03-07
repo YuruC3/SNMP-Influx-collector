@@ -1,0 +1,2 @@
+class SNMPTimeoutError(Exception):
+    pass
